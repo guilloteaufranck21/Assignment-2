@@ -4,11 +4,7 @@
 #include <string>
 #include <sstream>
 
-#include "nav2_msgs/action/navigate_to_pose.hpp"
-
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
 
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/header.hpp"
@@ -17,160 +13,70 @@
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 
-namespace navigator_client
+#include "apriltag_msgs/msg/april_tag_detection_array.hpp"
+#include "apriltag_msgs/msg/april_tag_detection.hpp"
+
+class AprilTagDetector : public rclcpp::Node
 {
-
-    class ActionClient2 : public rclcpp::Node
+public:
+    AprilTagDetector()
+        : Node("apriltag_detector")
     {
-    public:
-        ActionClient2()
-            : Node("action_client_2")
+        detection_sub_ = this->create_subscription<apriltag_msgs::msg::AprilTagDetectionArray>("/apriltag/detections", 10, std::bind(&AprilTagDetector::detectionCallback, this, std::placeholders::_1));
+
+        red_cube_pos_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/cube_poses/red", 10);
+        blue_cube_pos_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/cube_poses/blue", 10);
+    }
+
+    void detectionCallback(
+        const apriltag_msgs::msg::AprilTagDetectionArray::SharedPtr msg)
+    {
+        for (long unsigned int i = 0; i < sizeof(msg->detections); i++)
         {
-            // We subscrbe to /goal_between_tags topic where position between tags is written by goal_calculator node
-            this->x = 0.0;
-            this->y = 0.0;
+            apriltag_msgs::msg::AprilTagDetection detection;
+            detection = msg->detections[i];
+            int tag_id = detection.id;
 
-            auto topic_callback =
-                [this](geometry_msgs::msg::PoseStamped::UniquePtr msg) -> void
-            {
-                this->x = msg->pose.position.x;
-                this->y = msg->pose.position.x;
-            };
-            subscription_ =
-                this->create_subscription<geometry_msgs::msg::PoseStamped>("goal_between_tags", 10, topic_callback);
-        }
+            geometry_msgs::msg::PoseStamped pose_msg;
+            std_msgs::msg::Header pose_header;
+            pose_header.frame_id = "base_link";
+            pose_header.stamp = this->get_clock()->now();
+            pose_msg.header = pose_header;
+            pose_msg.pose.position.x = detection.centre.x;
+            pose_msg.pose.position.y = detection.centre.y;
 
-        using Dialog = nav2_msgs::action::NavigateToPose;
-        using GoalHandleDialog = rclcpp_action::ClientGoalHandle<Dialog>;
-
-        explicit ActionClient2(const rclcpp::NodeOptions &options)
-            : Node("Action_client_2", options), distance_remaining_(0.0), time_remaining_(0)
-        {
-            this->client_ptr_ = rclcpp_action::create_client<Dialog>(
-                this,
-                "navigate_to_pose"); // Action that takes destination's position
-
-            auto timer_callback_lambda = [this]()
-            { return this->send_goal(); };
-            this->timer_ = this->create_wall_timer(
-                std::chrono::milliseconds(1000),
-                timer_callback_lambda);
-
-            this->publish_timer_ = this->create_wall_timer(
-                std::chrono::seconds(5),
-                [this]()
-                {
-                    RCLCPP_INFO(this->get_logger(), "Distance remaining: %f m", distance_remaining_);
-                    RCLCPP_INFO(this->get_logger(), "Estimated time remaining: %d s", time_remaining_);
-                });
-        }
-
-        void send_goal()
-        {
-            using namespace std::placeholders;
-
-            this->timer_->cancel();
-
-            if (!this->client_ptr_->wait_for_action_server())
-            {
-                RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-                rclcpp::shutdown();
+            if (tag_id == 1)
+            { /* Red Cube */
+                red_cube_pos_->publish(pose_msg);
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(),
+                    *this->get_clock(),
+                    2000,
+                    "Detected Red Cube");
             }
 
-            auto goal_msg = Dialog::Goal();
-            geometry_msgs::msg::Pose pose;
-            geometry_msgs::msg::Point point;
-            geometry_msgs::msg::Quaternion quat;
-            geometry_msgs::msg::PoseStamped poseStamp;
-            std_msgs::msg::Header header;
-
-            header.frame_id = "map";
-            header.stamp = this->get_clock()->now();
-            // Values obtained through /goal_between_tags topic that we subscribed to earlier
-            point.x = this->x;
-            point.y = this->y;
-            point.z = 0.0;
-
-            quat.x = 0.0;
-            quat.y = 0.0;
-            quat.z = 0.0;
-            quat.w = 1.0;
-
-            pose.position = point;
-            pose.orientation = quat;
-
-            poseStamp.pose = pose;
-            poseStamp.header = header;
-
-            goal_msg.pose = poseStamp;
-
-            RCLCPP_INFO(this->get_logger(), "Sending goal with values (x=%f;y=%f)", point.x, point.y);
-
-            auto send_goal_options = rclcpp_action::Client<Dialog>::SendGoalOptions();
-            send_goal_options.goal_response_callback = [this](const GoalHandleDialog::SharedPtr &goal_handle)
-            {
-                if (!goal_handle)
-                {
-                    RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
-                }
-                else
-                {
-                    RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
-                }
-            };
-
-            send_goal_options.feedback_callback = [this](
-                                                      GoalHandleDialog::SharedPtr,
-                                                      const std::shared_ptr<const Dialog::Feedback> feedback)
-            {
-                // Time and distance remaining until destination reached obtained through action server feedback
-                distance_remaining_ = feedback->distance_remaining;
-                time_remaining_ = feedback->estimated_time_remaining.sec;
-            };
-
-            send_goal_options.result_callback = [this](const GoalHandleDialog::WrappedResult &result)
-            {
-                switch (result.code)
-                {
-                case rclcpp_action::ResultCode::SUCCEEDED:
-                    break;
-                case rclcpp_action::ResultCode::ABORTED:
-                    RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
-                    return;
-                case rclcpp_action::ResultCode::CANCELED:
-                    RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
-                    return;
-                default:
-                    RCLCPP_ERROR(this->get_logger(), "Unknown result code");
-                    return;
-                }
-                std::stringstream ss;
-                ss << "Robot arrived at destination";
-                RCLCPP_INFO(this->get_logger(), ss.str().c_str());
-                rclcpp::shutdown();
-            };
-            this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+            else if (tag_id == 10)
+            { /* Red Cube */
+                blue_cube_pos_->publish(pose_msg);
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(),
+                    *this->get_clock(),
+                    2000,
+                    "Detected Blue Cube");
+            }
         }
+    }
 
-    private:
-        rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subscription_;
-        float x;
-        float y;
-        rclcpp_action::Client<Dialog>::SharedPtr client_ptr_;
-        rclcpp::TimerBase::SharedPtr timer_;
-        rclcpp::TimerBase::SharedPtr publish_timer_;
-        float distance_remaining_;
-        int time_remaining_;
-    };
-
-}
+private:
+    rclcpp::Subscription<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr detection_sub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr red_cube_pos_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr blue_cube_pos_;
+};
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<navigator_client::ActionClient2>(rclcpp::NodeOptions()));
+    rclcpp::spin(std::make_shared<AprilTagDetector>());
     rclcpp::shutdown();
     return 0;
 }
-
-RCLCPP_COMPONENTS_REGISTER_NODE(navigator_client::ActionClient2)
