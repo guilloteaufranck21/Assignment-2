@@ -294,8 +294,9 @@ int main(int argc, char * argv[])
 
     openGripper(gripper, logger);
     rclcpp::sleep_for(std::chrono::seconds(1));
-
+    
     moveToXYZ(arm, logger, 4.6, -0.5, 0.8);
+    
     rclcpp::sleep_for(std::chrono::seconds(1));
 
    
@@ -314,6 +315,7 @@ int main(int argc, char * argv[])
             arm.getCurrentJointValues().size() - 2
         }
     );
+    
 
     rclcpp::sleep_for(std::chrono::seconds(1));
 
@@ -332,6 +334,9 @@ int main(int argc, char * argv[])
         
 
     );
+    
+   
+     
     rclcpp::sleep_for(std::chrono::seconds(1));
     
             moveYWithLockedJoints(
@@ -345,6 +350,7 @@ int main(int argc, char * argv[])
         
 
     );
+     
             moveXWithLockedJoints(
         arm,
         logger,
@@ -356,7 +362,7 @@ int main(int argc, char * argv[])
         
 
     );
-    
+  
     moveYWithLockedJoints(
         arm,
         logger,
@@ -369,6 +375,7 @@ int main(int argc, char * argv[])
 
     );
     
+    
     moveXWithLockedJoints(
         arm,
         logger,
@@ -380,17 +387,19 @@ int main(int argc, char * argv[])
         
 
     );
+     
     
     
     moveDownZWithLockedJoints(
         arm,
         logger,
-        -0.15, 
+        -0.10, 
         {
             arm.getCurrentJointValues().size() - 1,
             arm.getCurrentJointValues().size() - 2
         }
     );
+    
     
     openGripper(gripper, logger); 
     
@@ -404,6 +413,7 @@ int main(int argc, char * argv[])
         }
     );
     
+    
     moveYWithLockedJoints(
         arm,
         logger,
@@ -416,6 +426,7 @@ int main(int argc, char * argv[])
 
     );
     
+    
     moveXWithLockedJoints(
         arm,
         logger,
@@ -427,6 +438,7 @@ int main(int argc, char * argv[])
         
 
     );
+     
     rclcpp::sleep_for(std::chrono::seconds(1));
     moveDownZWithLockedJoints(
         arm,
@@ -437,6 +449,7 @@ int main(int argc, char * argv[])
             arm.getCurrentJointValues().size() - 2
         }
     );
+    
     rclcpp::sleep_for(std::chrono::seconds(1));
     closeGripper(gripper, logger);
     rclcpp::sleep_for(std::chrono::seconds(1));
@@ -449,7 +462,9 @@ int main(int argc, char * argv[])
             arm.getCurrentJointValues().size() - 2
         }
     );
+    
     rclcpp::sleep_for(std::chrono::seconds(1));
+    
     
     moveYWithLockedJoints(
         arm,
