@@ -10,12 +10,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)               # ajout pour /joint_states
+find_package(sensor_msgs REQUIRED) 
 find_package(apriltag_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(moveit_ros_planning_interface REQUIRED)  # pour MoveIt2
-
+find_package(moveit_ros_planning_interface REQUIRED)
 # --- Executables ---
 
 # Node Move Arm (avec récupération joint_states)
@@ -26,6 +25,11 @@ ament_target_dependencies(move_arm rclcpp geometry_msgs moveit_ros_planning_inte
 install(TARGETS
   move_arm
   DESTINATION lib/${PROJECT_NAME}
+)
+
+# --- Launch files ---
+install(DIRECTORY launch
+	DESTINATION share/${PROJECT_NAME}/
 )
 
 # --- Tests ---
