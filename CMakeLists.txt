@@ -18,22 +18,12 @@ find_package(moveit_ros_planning_interface REQUIRED)  # pour MoveIt2
 
 # --- Executables ---
 
-# Node AprilTag Detector
-add_executable(apriltag_detector src/apriltag_detector.cpp)
-ament_target_dependencies(apriltag_detector rclcpp std_msgs geometry_msgs apriltag_msgs)
-
-# Node Cube Pose Transformer
-add_executable(cube_pose_transformer src/cube_pose_transformer.cpp)
-ament_target_dependencies(cube_pose_transformer rclcpp geometry_msgs tf2_ros tf2_geometry_msgs)
-
 # Node Move Arm (avec récupération joint_states)
 add_executable(move_arm src/move_arm.cpp)
 ament_target_dependencies(move_arm rclcpp geometry_msgs moveit_ros_planning_interface sensor_msgs)
 
 # --- Installation ---
 install(TARGETS
-  apriltag_detector
-  cube_pose_transformer
   move_arm
   DESTINATION lib/${PROJECT_NAME}
 )
