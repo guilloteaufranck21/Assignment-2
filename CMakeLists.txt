@@ -12,7 +12,6 @@ find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-# The executable must match the name you are calling in terminal
 add_executable(apriltag_detector src/apriltag_detector.cpp)
 
 ament_target_dependencies(apriltag_detector
@@ -23,7 +22,9 @@ ament_target_dependencies(apriltag_detector
   tf2
   tf2_geometry_msgs
 )
+
 add_executable(tag_transformer src/tag_transformer.cpp)
+
 ament_target_dependencies(tag_transformer 
   rclcpp 
   geometry_msgs 
