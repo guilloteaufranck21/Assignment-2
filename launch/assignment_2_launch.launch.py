@@ -1,11 +1,24 @@
 import signal
+import os
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, TimerAction, EmitEvent
+from launch.actions import RegisterEventHandler, TimerAction, EmitEvent, IncludeLaunchDescription
 from launch.events.process import SignalProcess
 from launch.event_handlers import OnProcessExit
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 
 def generate_launch_description():
+    ##simulation_launch = IncludeLaunchDescription(
+    ##PythonLaunchDescriptionSource(
+        ##os.path.join(
+            ##get_package_share_directory('ir_launch'),
+            ##'launch',
+            ##'assignment_2.launch.py'
+            ##)
+        ##)
+    ##) 
+    
     first_node = Node(
         package="group31_assignment_2",
         executable="apriltag_detector",
@@ -23,8 +36,13 @@ def generate_launch_description():
     third_node = Node(
         package="group31_assignment_2",
         executable="move_arm",
-        name="move_arm",
+        name="arm_mover",
         output="screen"
+    )
+
+    first_node_handler = TimerAction(
+        period=20.0,
+        actions=[first_node]
     )
 
     second_node_handler = RegisterEventHandler(
@@ -42,7 +60,7 @@ def generate_launch_description():
     )
 
     stop_first_node = TimerAction(
-        period=5.0,
+        period=25.0,
         actions=[
             EmitEvent(
                 event=SignalProcess(
@@ -56,7 +74,7 @@ def generate_launch_description():
     )
 
     stop_second_node = TimerAction(
-        period=10.0,
+        period=30.0,
         actions=[
             EmitEvent(
                 event=SignalProcess(
@@ -70,9 +88,10 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        first_node,
+        ##simulation_launch,
+        first_node_handler,
         stop_first_node,
         second_node_handler,
         stop_second_node,
-        third_node_handler
+        ##third_node_handler
     ])
