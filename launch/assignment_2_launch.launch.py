@@ -60,7 +60,7 @@ def generate_launch_description():
     )
 
     stop_first_node = TimerAction(
-        period=25.0,
+        period=40.0,
         actions=[
             EmitEvent(
                 event=SignalProcess(
@@ -74,7 +74,7 @@ def generate_launch_description():
     )
 
     stop_second_node = TimerAction(
-        period=30.0,
+        period=60.0,
         actions=[
             EmitEvent(
                 event=SignalProcess(
