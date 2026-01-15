@@ -14,7 +14,7 @@ public:
 
         //from apriltag detector node... from cam frame to world
         subscription = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/detected_tags", 10, std::bind(&TagTransformer::camera_to_base, this, std::placeholders::_1));
+            "/detected_tags", 10, std::bind(&TagTransformer::camera_to_world, this, std::placeholders::_1));
 
         //publishing
         publisher = this->create_publisher<geometry_msgs::msg::PoseStamped>("/robot_target_pose", 10);
@@ -23,26 +23,27 @@ public:
     }
 
 private:
-    void camera_to_base(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
-        try {
-            
-            geometry_msgs::msg::PoseStamped transformed_pose;
-            transformed_pose = tf_buffer->transform(*msg, "base_link");
+    void camera_to_world(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+    try {
+        geometry_msgs::msg::PoseStamped transformed_pose;
+        
+        transformed_pose = tf_buffer->transform(*msg, "world");
 
-            //for exact position for the gripper to hold
-            transformed_pose.pose.position.z -= 0.05;
+        //by this we can get the coordinates of the centre of cube for the gripper to hold it (-0.05 from 0.1 m length og the cube)
+        transformed_pose.pose.position.z -= 0.05;
 
-            publisher->publish(transformed_pose);
+        publisher->publish(transformed_pose);
 
-            RCLCPP_INFO(this->get_logger(), "Transformed Pose: X:%.2f Y:%.2f Z:%.2f",
-                        transformed_pose.pose.position.x,
-                        transformed_pose.pose.position.y,
-                        transformed_pose.pose.position.z);
+        RCLCPP_INFO(this->get_logger(), "Transformed to WORLD: X:%.2f Y:%.2f Z:%.2f",
+                    transformed_pose.pose.position.x,
+                    transformed_pose.pose.position.y,
+                    transformed_pose.pose.position.z);
 
-        } catch (const tf2::TransformException & ex) {
-            RCLCPP_WARN(this->get_logger(), "Could not transform: %s", ex.what());
-        }
+    } catch (const tf2::TransformException & ex) {
+        RCLCPP_WARN(this->get_logger(), "Could not transform to world frame: %s", ex.what());
     }
+}
+
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subscription;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr publisher;
     std::unique_ptr<tf2_ros::Buffer> tf_buffer;
