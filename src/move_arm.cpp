@@ -353,10 +353,28 @@ int main(int argc, char *argv[])
         return 1;
     }
     RCLCPP_INFO(logger, "Pose A x position : %f", pose_a.position.x);
+
+    int first_x = pose_a.position.x;
+    int first_y = pose_a.position.y;
+    int first_z = pose_a.position.z;
+    int second_x = pose_b.position.x;
+    int second_y = pose_b.position.y;
+    int second_z = pose_b.position.z;
+
+    if (pose_b.position.x == 4.6)
+    {
+        int first_x = pose_b.position.x;
+        int first_y = pose_b.position.y;
+        int first_z = pose_b.position.z;
+        int second_x = pose_a.position.x;
+        int second_y = pose_a.position.y;
+        int second_z = pose_a.position.z;
+    }
+
     openGripper(gripper, logger);
     rclcpp::sleep_for(std::chrono::seconds(1));
 
-    moveToXYZ(arm, logger, 4.6, -0.5, 0.8);
+    moveToXYZ(arm, logger, first_x, first_y, first_z + 0.4);
 
     rclcpp::sleep_for(std::chrono::seconds(1));
 
