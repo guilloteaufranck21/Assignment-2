@@ -352,30 +352,37 @@ int main(int argc, char *argv[])
         RCLCPP_FATAL(logger, "Joints not received");
         return 1;
     }
-    RCLCPP_INFO(logger, "Pose A x position : %f", pose_a.position.x);
+    RCLCPP_INFO(logger, "Pose B x position : %f", pose_b.position.x + 0.06);
+    RCLCPP_INFO(logger, "Pose B y position : %f", pose_b.position.y);
+    RCLCPP_INFO(logger, "Pose B z position : %f", pose_b.position.z + 0.42);
+    RCLCPP_INFO(logger, "New version");
 
-    int first_x = pose_a.position.x;
-    int first_y = pose_a.position.y;
-    int first_z = pose_a.position.z;
-    int second_x = pose_b.position.x;
-    int second_y = pose_b.position.y;
-    int second_z = pose_b.position.z;
+    float first_x = pose_b.position.x;
+    float first_y = pose_b.position.y;
+    float first_z = pose_b.position.z;
+    float second_x = pose_a.position.x;
+    float second_y = pose_a.position.y;
+    float second_z = pose_a.position.z;
 
-    if (abs(4.6 - pose_b.position.x) <= 0.5)
+    if (pose_b.position.x > 4.5 and pose_b.position.x < 4.7)
     {
-        int first_x = pose_b.position.x;
-        int first_y = pose_b.position.y;
-        int first_z = pose_b.position.z;
-        int second_x = pose_a.position.x;
-        int second_y = pose_a.position.y;
-        int second_z = pose_a.position.z;
+        first_x = pose_a.position.x;
+        first_y = pose_a.position.y;
+        first_z = pose_a.position.z;
+        second_x = pose_b.position.x;
+        second_y = pose_b.position.y;
+        second_z = pose_b.position.z;
     }
+
+    RCLCPP_INFO(logger, "Second x position : %f", second_x + 0.06);
+    RCLCPP_INFO(logger, "Second y position : %f", second_y);
+    RCLCPP_INFO(logger, "Second z position : %f", second_z + 0.42);
 
     openGripper(gripper, logger);
     rclcpp::sleep_for(std::chrono::seconds(1));
 
-    moveToXYZ(arm, logger, first_x, first_y, first_z + 0.4);
-
+    moveToXYZ(arm, logger, second_x + 0.03, second_y, second_z + 0.40);
+    /// moveToXYZ(arm, logger, 4.6, -0.5, 0.8);
     rclcpp::sleep_for(std::chrono::seconds(1));
 
     rotateJoint(arm, logger, arm.getCurrentJointValues().size() - 1, 1.2);
