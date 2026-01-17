@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
     int second_y = pose_b.position.y;
     int second_z = pose_b.position.z;
 
-    if (pose_b.position.x == 4.6)
+    if (abs(4.6 - pose_b.position.x) <= 0.5)
     {
         int first_x = pose_b.position.x;
         int first_y = pose_b.position.y;
