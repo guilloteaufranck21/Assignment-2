@@ -18,7 +18,7 @@ cubes accordingly.
 In your ROS2 workspace containing the package of the similation, move to the "src" file and clone the github repository using this command : "git clone https://github.com/guilloteaufranck21/Assignment-2".
 This will create a package "Assignment-2" in your "src" folder.
 
-# Warning : you need to take the two nodes "apriltag_detector" and "tag_transformer" and put them in a separate package called "assignment" for them to work properly, otherwise they won't work properly
+#### Warning : you need to take the two nodes "apriltag_detector" and "tag_transformer" and put them in a separate package called "assignment" for them to work properly, otherwise they won't work properly
 
 After building your workspace correctly, in a first terminal :
 
