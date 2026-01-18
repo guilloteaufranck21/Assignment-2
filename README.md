@@ -18,17 +18,17 @@ cubes accordingly.
 In your ROS2 workspace containing the package of the similation, move to the "src" file and clone the github repository using this command : "git clone https://github.com/guilloteaufranck21/Assignment-2".
 This will create a package "Assignment-2" in your "src" folder.
 
-#### Warning : you need to take the two nodes "apriltag_detector" and "tag_transformer" and put them in a separate package called "assignment" for them to work properly, otherwise they won't work properly
+#### Warning : you need to take the two nodes "apriltag_detector" and "tag_transformer" and put them in a separate package called "assignment" for them to work properly, otherwise they won't.
 
 After building your workspace correctly, in a first terminal :
 
   - Move to the root folder of your workspace
   - Source your environment using "source install/setup.bash"
-  - Run the simulation and the first two nodes by using "ros2 launch Assignment-2 assignment_2_launch.launch.py"
+  - Run the simulation and the first two nodes by using "ros2 launch group31_assignment_2 assignment_2_launch.launch.py"
 
 In a second terminal, after the first terminal starts to show the two coordinates of the cubes (roughly 30 seconds after launch) :
   - Move to the root folder of your workspace
   - Source your environment using "source install/setup.bash"
-  - Run the arm movement node by using "ros2 run Assignment-2 move_arm".
+  - Run the arm movement node by using "ros2 run group31_assignment_2 move_arm".
 
 The arm should first pick up the blue cube, move to the red one's table, put it down, pick up the red cube before finally moving back to the blue cube's table.
