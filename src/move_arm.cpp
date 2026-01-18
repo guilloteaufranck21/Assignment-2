@@ -352,10 +352,6 @@ int main(int argc, char *argv[])
         RCLCPP_FATAL(logger, "Joints not received");
         return 1;
     }
-    RCLCPP_INFO(logger, "Pose B x position : %f", pose_b.position.x + 0.06);
-    RCLCPP_INFO(logger, "Pose B y position : %f", pose_b.position.y);
-    RCLCPP_INFO(logger, "Pose B z position : %f", pose_b.position.z + 0.42);
-    RCLCPP_INFO(logger, "New version");
 
     float first_x = pose_b.position.x;
     float first_y = pose_b.position.y;
@@ -373,10 +369,6 @@ int main(int argc, char *argv[])
         second_y = pose_b.position.y;
         second_z = pose_b.position.z;
     }
-
-    RCLCPP_INFO(logger, "Second x position : %f", second_x + 0.06);
-    RCLCPP_INFO(logger, "Second y position : %f", second_y);
-    RCLCPP_INFO(logger, "Second z position : %f", second_z + 0.42);
 
     openGripper(gripper, logger);
     rclcpp::sleep_for(std::chrono::seconds(1));
