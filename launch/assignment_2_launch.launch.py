@@ -9,32 +9,32 @@ from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    ##simulation_launch = IncludeLaunchDescription(
-    ##PythonLaunchDescriptionSource(
-        ##os.path.join(
-            ##get_package_share_directory('ir_launch'),
-            ##'launch',
-            ##'assignment_2.launch.py'
-            ##)
-        ##)
-    ##) 
+    simulation_launch = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+        os.path.join(
+            get_package_share_directory('ir_launch'),
+            'launch',
+            'assignment_2.launch.py'
+            )
+        )
+    ) 
     
     first_node = Node(
-        package="group31_assignment_2",
+        package="assignment",
         executable="apriltag_detector",
         name="apriltag_detector",
         output="screen"
     )
 
     second_node = Node(
-        package="group31_assignment_2",
+        package="assignment",
         executable="tag_transformer",
         name="tag_transformer",
         output="screen"
     )
 
     third_node = Node(
-        package="group31_assignment_2",
+        package="Assignment-2",
         executable="move_arm",
         name="arm_mover",
         output="screen"
@@ -45,53 +45,19 @@ def generate_launch_description():
         actions=[first_node]
     )
 
-    second_node_handler = RegisterEventHandler(
-        OnProcessExit(
-            target_action=first_node,
-            on_exit=[second_node]
-        )
+    second_node_handler = TimerAction(
+        period=30.0,
+        actions=[second_node]
     )
 
-    third_node_handler = RegisterEventHandler(
-        OnProcessExit(
-            target_action=second_node,
-            on_exit=[third_node]
-        )
-    )
-
-    stop_first_node = TimerAction(
+    third_node_handler = TimerAction(
         period=40.0,
-        actions=[
-            EmitEvent(
-                event=SignalProcess(
-                    signal_number=signal.SIGINT,
-                    process_matcher=lambda proc: proc.name.startswith('apriltag_detector')
-
-
-                )
-            )
-        ]
-    )
-
-    stop_second_node = TimerAction(
-        period=60.0,
-        actions=[
-            EmitEvent(
-                event=SignalProcess(
-                    signal_number=signal.SIGINT,
-                    process_matcher=lambda proc: proc.name.startswith('tag_transformer')
-
-
-                )
-            )
-        ]
+        actions=[third_node]
     )
 
     return LaunchDescription([
-        ##simulation_launch,
+        simulation_launch,
         first_node_handler,
-        stop_first_node,
         second_node_handler,
-        stop_second_node,
         ##third_node_handler
     ])
